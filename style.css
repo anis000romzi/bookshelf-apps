@@ -174,7 +174,7 @@ main {
 .book_shelf > .book_list > .book_item > .action > button {
     border: 0;
     padding: 5px;
-    margin: 0 5px 0 0;
+    margin: 2px;
     border-radius: 5px;
     cursor: pointer;
 }
@@ -194,4 +194,13 @@ main {
 
 .secondary:hover {
     background-color: #4b4721;
+}
+
+.edit{
+    background-color: rgb(253, 240, 213);
+    color: #282612;
+}
+
+.edit:hover {
+    background-color:  rgb(247, 212, 144);
 }

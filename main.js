@@ -16,18 +16,37 @@ function addBook(isCompleted) {
   const author = document.getElementById("inputBookAuthor").value;
   const year = document.getElementById("inputBookYear").value;
 
-  const generatedID = +new Date();
-  const bookObject = createBookObject(
-    generatedID,
-    title,
-    author,
-    year,
-    isCompleted
-  );
-  books.push(bookObject);
+  if (title == "" && author == "" && year == "")
+    alert("You haven't write a THING!");
+  else if (title == "") alert("You haven't write the TITLE!");
+  else if (author == "") alert("You haven't write the AUTHOR!");
+  else if (year == "") alert("You haven't write the YEAR of RELEASE!");
+  else {
+    const generatedID = +new Date();
+    const bookObject = createBookObject(
+      generatedID,
+      title,
+      author,
+      year,
+      isCompleted
+    );
+    books.push(bookObject);
 
-  document.dispatchEvent(new Event(RENDER_EVENT));
-  saveData();
+    document.dispatchEvent(new Event(RENDER_EVENT));
+    saveData();
+  }
+}
+
+function searchingBook() {
+  const searchBar = document.getElementById("searchBookTitle").value.toLowerCase();
+  const bookList = document.querySelectorAll(".book_list article");
+
+  // Cari buku berdasarkan judul/title
+  for (let listOfBook of bookList) {
+    if (listOfBook.getAttribute("data-value").toLowerCase().indexOf(searchBar) > -1)
+      listOfBook.style.display = "";
+    else listOfBook.style.display = "none";
+  }
 }
 
 function findBook(bookId) {
@@ -101,6 +120,22 @@ function deleteBook(bookId) {
   saveData();
 }
 
+function editBook(bookId) {
+  const bookTarget = findBook(bookId);
+  if (bookTarget == null) return;
+
+  let editTitle = prompt("What's the right TITLE?", bookTarget.title);
+  let editAuthor = prompt("Who's the right AUTHOR?", bookTarget.author);
+  let editYear = prompt("What's the right release YEAR?", bookTarget.year);
+
+  if (editTitle != null) bookTarget.title = editTitle;
+  if (editAuthor != null) bookTarget.author = editAuthor;
+  if (editYear != null) bookTarget.year = editYear;
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveData();
+}
+
 function createBook(bookObject) {
   const textTitle = document.createElement("h3");
   textTitle.innerText = bookObject.title;
@@ -112,6 +147,8 @@ function createBook(bookObject) {
   textYear.innerText = `Release Year: ${bookObject.year}`;
 
   const textContainer = document.createElement("article");
+  // data-value untuk mencari buku berdasarkan judul/title
+  textContainer.setAttribute("data-value", bookObject.title);
   textContainer.classList.add("book_item");
   textContainer.append(textTitle, textAuthor, textYear);
 
@@ -135,7 +172,15 @@ function createBook(bookObject) {
       deleteBook(bookObject.id);
     });
 
-    containerButton.append(readAgainButton, deleteButton);
+    const editButton = document.createElement("button");
+    editButton.classList.add("edit");
+    editButton.innerText = "Edit Book";
+
+    editButton.addEventListener("click", function () {
+      editBook(bookObject.id);
+    });
+
+    containerButton.append(readAgainButton, deleteButton, editButton);
     textContainer.append(containerButton);
   } else {
     const containerButton = document.createElement("div");
@@ -157,7 +202,15 @@ function createBook(bookObject) {
       deleteBook(bookObject.id);
     });
 
-    containerButton.append(finishButton, deleteButton);
+    const editButton = document.createElement("button");
+    editButton.classList.add("edit");
+    editButton.innerText = "Edit Book";
+
+    editButton.addEventListener("click", function () {
+      editBook(bookObject.id);
+    });
+
+    containerButton.append(finishButton, deleteButton, editButton);
     textContainer.append(containerButton);
   }
 
@@ -167,26 +220,27 @@ function createBook(bookObject) {
 document.addEventListener("DOMContentLoaded", function () {
   const submitFormReading = document.getElementById("inputBookReading");
   const submitFormFinish = document.getElementById("inputBookFinish");
+  const searchBook = document.getElementById("searchBook");
+  searchBook.addEventListener("submit", function (event) {
+    event.preventDefault();
+    searchingBook(); // Mencari buku
+  });
   submitFormReading.addEventListener("submit", function (event) {
     event.preventDefault();
-    addBook(false); //isCompleted = false
+    addBook(false); // isCompleted = false
   });
   submitFormFinish.addEventListener("submit", function (event) {
     event.preventDefault();
-    addBook(true); //isCompleted = true
+    addBook(true); // isCompleted = true
   });
   if (isStorageExist()) loadDataFromStorage();
 });
 
 document.addEventListener(RENDER_EVENT, function () {
-  const incompletedBookShelfList = document.getElementById(
-    "incompleteBookshelfList"
-  );
+  const incompletedBookShelfList = document.getElementById("incompleteBookshelfList");
   incompletedBookShelfList.innerHTML = "";
 
-  const completedBookShelfList = document.getElementById(
-    "completeBookshelfList"
-  );
+  const completedBookShelfList = document.getElementById("completeBookshelfList");
   completedBookShelfList.innerHTML = "";
 
   for (const bookItem of books) {
